@@ -1,0 +1,11 @@
+TabICLv2 - NinaPro DB1
+Test samples: 6597
+Number of classes: 52
+Accuracy: 0.952099 (95.21%)
+Macro precision: 0.952549
+Macro recall: 0.952077
+Macro F1: 0.952087
+Weighted F1: 0.952126
+Fit time: 4.45 seconds
+Prediction time: 30.45 seconds
+Total time: 35.33 seconds
