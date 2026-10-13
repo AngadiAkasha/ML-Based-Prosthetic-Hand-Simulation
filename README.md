@@ -102,9 +102,12 @@ Evaluate classification using accuracy, macro precision, macro recall, macro F1-
 
 Convert the predicted gesture into a five-finger angle vector:
 
-\[
-\theta_d=[\theta_T,\theta_I,\theta_M,\theta_R,\theta_L]^T
-\]
+$$
+\boldsymbol{\theta}_d =
+\begin{bmatrix}
+\theta_T & \theta_I & \theta_M & \theta_R & \theta_L
+\end{bmatrix}^{T}
+$$
 
 The five elements represent the thumb, index, middle, ring, and little fingers.
 
@@ -112,22 +115,31 @@ The five elements represent the thumb, index, middle, ring, and little fingers.
 
 Calculate the tracking error:
 
-\[
-e(t)=\theta_d(t)-\theta_a(t)
-\]
+$$
+e(t) = \theta_d(t) - \theta_a(t)
+$$
 
 The PID controller computes the control signal:
 
-\[
-u(t)=K_p e(t)+K_i\int_0^t e(\tau)d\tau+
-K_d\frac{de(t)}{dt}
-\]
+$$
+u(t) = K_p e(t)
++ K_i \int_0^t e(\tau)\,d\tau
++ K_d \frac{de(t)}{dt}
+$$
+
+where:
+
+- \(K_p\) is the proportional gain.
+- \(K_i\) is the integral gain.
+- \(K_d\) is the derivative gain.
+- \(e(t)\) is the tracking error.
+- \(u(t)\) is the controller output.
 
 The controller output is applied to the mathematical plant model to simulate finger movement.
 
 ### 8. PID Tuning
 
-The research investigates five methods:
+The research investigates five PID tuning methods:
 
 1. Ziegler–Nichols
 2. Genetic Algorithm
@@ -135,9 +147,7 @@ The research investigates five methods:
 4. Multiple-Shooting Optimization
 5. Routh–Hurwitz-based optimization
 
-Compare the methods using rise time, settling time, percentage overshoot, and stability.
-
-### 9. 3D Visualization
+The methods are compared using rise time, settling time, percentage overshoot, and stability.### 9. 3D Visualization
 
 The MATLAB visualization displays the desired gesture pose and simulated finger movements. This provides a graphical representation of the connection between gesture recognition and controller output.
 
