@@ -1,6 +1,6 @@
 # ML-Based-Prosthetic-Hand-Simulation
 
-MATLAB implementation of an sEMG-based prosthetic hand simulation framework using NinaPro DB1 and DB4 datasets, RMS feature extraction, machine learning classification, gesture-to-joint mapping, PID control, and 3D hand visualization.
+MATLAB implementation of an sEMG-based prosthetic hand simulation framework using NinaPro DB1  datasets, RMS feature extraction, machine learning classification, gesture-to-joint mapping, PID control, and 3D hand visualization.
 
 ## Project Overview
 
