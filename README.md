@@ -1,23 +1,25 @@
 # ML-Based-Prosthetic-Hand-Simulation
 
-MATLAB implementation of an sEMG-based prosthetic hand simulation framework using NinaPro DB1  datasets, RMS feature extraction, machine learning classification, gesture-to-joint mapping, PID control, and 3D hand visualization.
+A MATLAB-based sEMG prosthetic-hand simulation framework integrating signal processing, machine learning, gesture-to-joint mapping, PID control, and 3D hand visualization using the NinaPro DB1 and DB4 datasets.
 
 ## Project Overview
 
-This project integrates surface electromyography (sEMG) signal processing, machine learning, and control systems to simulate prosthetic-hand movements.
+This project investigates the integration of surface electromyography (sEMG)-based gesture recognition and feedback control for simulated prosthetic-hand movement.
 
-The workflow processes sEMG signals, extracts RMS features, classifies hand gestures, converts predicted gesture labels into five-finger joint-angle references, and uses PID control with a mathematical plant model to simulate finger movement.
+The framework processes sEMG signals, extracts Root Mean Square (RMS) features, classifies hand movements, maps predicted gestures to predefined finger-joint angles, and applies PID control with a mathematical plant model to simulate finger trajectories in MATLAB.
+
+The project also compares machine learning classifiers and investigates multiple PID tuning strategies.
 
 ## System Workflow
 
 ```text
-NinaPro DB1 
+NinaPro DB1 / DB4
         |
         v
 sEMG Signal Processing
         |
         v
-Sliding Window Segmentation
+Sliding-Window Segmentation
         |
         v
 RMS Feature Extraction
@@ -35,72 +37,113 @@ Gesture-to-Finger Angle Mapping
 PID Controller and Plant Model
         |
         v
-Simulated Finger-Angle Tracking
+Finger-Angle Trajectory Simulation
         |
         v
-3D MATLAB Hand Visualization
+3D MATLAB Prosthetic-Hand Visualization
 ```
 
 ## Repository Structure
 
-- `2_FeatureExtraction/` — Signal processing and feature extraction.
-- `3_MachineLearning_DB1/` — Machine learning implementations for NinaPro DB1.
-- `3_MachineLearning_DB4 - Copy/` — Machine learning implementations for NinaPro DB4.
+```text
+ML-Based-Prosthetic-Hand-Simulation/
+|
+|-- 2_FeatureExtraction/
+|   |-- Feature extraction and signal processing scripts
+|
+|-- 3_MachineLearning_DB1/
+|   |-- DB1 machine learning implementations
+|
+|-- 3_MachineLearning_DB4 - Copy/
+|   |-- DB4 machine learning implementations
+|
+|-- README.md
+```
 
-Refer to the MATLAB scripts in each folder for the exact execution order and dependencies.
+The directory descriptions are indicative. Refer to the actual MATLAB files in each folder to identify the entry-point scripts, dependencies, and execution order.
 
 ## Technologies Used
 
 - MATLAB
 - NinaPro DB1 and DB4 datasets
+- sEMG signal processing
 - RMS feature extraction
 - Decision Tree
 - K-Nearest Neighbors (KNN)
 - Support Vector Machine (SVM)
 - Artificial Neural Network (ANN)
 - Random Forest
-- TabICLv2 (additional classification experiment)
-- PID controller
-- Ziegler–Nichols and Genetic Algorithm tuning
+- TabICLv2 as an additional classification approach
+- PID control and mathematical plant modeling
+- Ziegler–Nichols tuning
+- Genetic Algorithm (GA)
+- Bayesian Optimization
+- Multiple-Shooting Optimization
+- Routh–Hurwitz-based optimization
 - MATLAB 3D visualization
 
-## Implementation Steps
+## Methodology
 
 ### 1. Dataset Preparation
 
-Obtain the authorized NinaPro DB1 or DB4 dataset. Load the sEMG signals and corresponding movement labels. Process the datasets separately because their channel configurations differ.
+The framework uses NinaPro DB1 and DB4. Obtain the datasets through their authorized access procedures and organize the files according to the paths expected by the MATLAB scripts.
+
+The datasets are processed separately because their sEMG channel counts and sampling frequencies differ.
 
 ### 2. Signal Segmentation
 
 The reported segmentation parameters are:
 
-- Window length: 200 samples
-- Window increment: 50 samples
-- Window overlap: 75%
+| Parameter | Value |
+|---|---:|
+| Window length | 200 samples |
+| Window increment | 50 samples |
+| Window overlap | 75% |
+
+The corresponding window durations depend on the dataset sampling frequency. With the reported frequencies of 100 Hz for DB1 and 2000 Hz for DB4, a 200-sample window represents 2 seconds for DB1 and 0.1 seconds for DB4.
 
 ### 3. RMS Feature Extraction
 
-Calculate the RMS value for each channel in each window:
+RMS features represent the signal amplitude within each analysis window.
 
-\[
+The RMS feature for a window is calculated as:
+
+$$
 RMS=\sqrt{\frac{1}{W}\sum_{n=1}^{W}x(n)^2}
-\]
+$$
 
-DB1 produces 10 RMS features per window, while DB4 produces 12.
+where \(x(n)\) is the sEMG sample and \(W\) is the window length.
+
+With one RMS feature per channel:
+
+- DB1 produces 10 features per window.
+- DB4 produces 12 features per window.
 
 ### 4. Feature Normalization
 
-Normalize features using statistics calculated from the training data. Apply the same normalization parameters to the evaluation data to avoid data leakage.
+Normalize the extracted features using statistics calculated from the training set. Apply the same transformation to validation and test data.
+
+This prevents information from the evaluation data from leaking into the training process.
 
 ### 5. Machine Learning Classification
 
-Train and evaluate Decision Tree, KNN, SVM, ANN, and Random Forest classifiers. TabICLv2 is evaluated as an additional approach.
+The conventional classifiers investigated include:
 
-Evaluate classification using accuracy, macro precision, macro recall, macro F1-score, and confusion matrices.
+- Decision Tree
+- KNN
+- SVM
+- ANN
+- Random Forest
 
-### 6. Gesture-to-Joint Mapping
+TabICLv2 is evaluated as an additional classification approach.
 
-Convert the predicted gesture into a five-finger angle vector:
+The reported evaluation metrics include accuracy, macro precision, macro recall, macro F1-score, and confusion matrices.
+
+### 6. Gesture-to-Finger Angle Mapping
+
+Predicted gesture labels are mapped to predefined finger-angle references.
+
+The desired joint-angle vector is represented as:
 
 $$
 \boldsymbol{\theta}_d =
@@ -109,37 +152,39 @@ $$
 \end{bmatrix}^{T}
 $$
 
-The five elements represent the thumb, index, middle, ring, and little fingers.
+where \(T\), \(I\), \(M\), \(R\), and \(L\) denote the thumb, index, middle, ring, and little fingers, respectively.
 
-### 7. PID Control
+The mapping uses predefined finger configurations; it does not by itself establish continuous joint-angle estimation from sEMG.
 
-Calculate the tracking error:
+### 7. PID Controller
 
-$$
-e(t) = \theta_d(t) - \theta_a(t)
-$$
-
-The PID controller computes the control signal:
+The tracking error is calculated as:
 
 $$
-u(t) = K_p e(t)
-+ K_i \int_0^t e(\tau)\,d\tau
-+ K_d \frac{de(t)}{dt}
+e(t)=\theta_d(t)-\theta_a(t)
+$$
+
+The PID controller computes its control signal using:
+
+$$
+u(t)=K_p e(t)
++K_i\int_0^t e(\tau)\,d\tau
++K_d\frac{de(t)}{dt}
 $$
 
 where:
 
-- \(K_p\) is the proportional gain.
-- \(K_i\) is the integral gain.
-- \(K_d\) is the derivative gain.
-- \(e(t)\) is the tracking error.
-- \(u(t)\) is the controller output.
+- \(K_p\): proportional gain
+- \(K_i\): integral gain
+- \(K_d\): derivative gain
+- \(e(t)\): tracking error
+- \(u(t)\): controller output
 
-The controller output is applied to the mathematical plant model to simulate finger movement.
+The control signal is applied to the mathematical plant model to simulate finger movement.
 
-### 8. PID Tuning
+### 8. PID Tuning and Comparison
 
-The research investigates five PID tuning methods:
+The research investigates five PID tuning approaches:
 
 1. Ziegler–Nichols
 2. Genetic Algorithm
@@ -147,71 +192,84 @@ The research investigates five PID tuning methods:
 4. Multiple-Shooting Optimization
 5. Routh–Hurwitz-based optimization
 
-The methods are compared using rise time, settling time, percentage overshoot, and stability.### 9. 3D Visualization
+The tuning methods are compared using rise time, settling time, percentage overshoot, and stability.
 
-The MATLAB visualization displays the desired gesture pose and simulated finger movements. This provides a graphical representation of the connection between gesture recognition and controller output.
+The numerical results should be taken from the final validated MATLAB experiment outputs. Different controller implementations or result tables should not be combined without verifying their configurations.
+
+### 9. 3D Visualization
+
+The MATLAB visualization displays the simulated prosthetic-hand pose and finger movements. It provides a graphical representation of the relationship between gesture classification, desired joint angles, and simulated controller response.
+
+The visualization is a software simulation and does not demonstrate the performance of a physical prosthetic device.
 
 ## Reported Classification Results
 
-The following results are reported in the research paper.
+The following values are reported in the current research manuscript. They should be interpreted in the context of the corresponding dataset, class selection, data split, and evaluation protocol.
 
-| Model | Dataset | Accuracy |
-|---|---|---:|
-| KNN | DB1 | 89.15% |
-| Decision Tree | DB1 | 80.50% |
-| ANN | DB1 | 77.35% |
-| SVM | DB1 | 88.82% |
-| Random Forest | DB1 | 93.36% |
-| TabICLv2 | DB1 | 95.21% |
-| KNN | DB4 | 82.77% |
-| Random Forest | DB4 | 80.19% |
+| Model | Dataset | Accuracy | Macro Precision | Macro Recall | Macro F1-score |
+|---|---|---:|---:|---:|---:|
+| TabICLv2 | DB1 | 95.21% | 95.25% | 95.21% | 95.21% |
+| Random Forest | DB1 | 85.46% | 85.77% | 85.46% | 85.44% |
+| Random Forest | DB4 | 80.08% | 73.39% | 63.54% | 67.95% |
+| KNN | DB1 | 75.06% | 75.62% | 75.07% | 75.03% |
+| SVM | DB1 | 74.30% | 75.00% | 74.31% | 74.31% |
+| Decision Tree | DB1 | 56.47% | 56.59% | 56.47% | 56.33% |
+| ANN | DB1 | 38.92% | 36.97% | 38.93% | 38.77% |
 
-The reported experiments use selected movement classes. The TabICLv2 result should not be treated as a directly comparable improvement unless the evaluation protocols are confirmed to match.
+**Important:** These values are reported manuscript results, not independently revalidated measurements. Confirm them against the final result files before treating this table as the definitive benchmark. In particular, do not combine these values with earlier experiments that used different movement classes or evaluation protocols.
+
+TabICLv2 is an additional approach and should only be compared directly with the conventional classifiers when the evaluation conditions are equivalent.
 
 ## Requirements
 
 - MATLAB
-- Required MATLAB toolboxes for the implemented scripts
-- Authorized NinaPro dataset files
-- Project source files and dependencies
+- NinaPro DB1 and/or DB4 dataset files obtained through authorized access
+- Required MATLAB toolboxes, depending on the scripts used
+- Project source files and their dependencies
+- Any additional dependencies required by the TabICLv2 experiment, if applicable
 
 ## How to Run
 
-1. Download or clone this repository.
-2. Open MATLAB and set the project root as the Current Folder.
+1. Clone or download the repository.
+2. Open MATLAB and set the repository root as the Current Folder.
 3. Add the required project folders to the MATLAB path.
 4. Place the authorized dataset files in the locations expected by the scripts.
-5. Run the feature-extraction entry point.
-6. Verify the generated features and labels.
-7. Run the appropriate DB1 or DB4 classification script.
-8. Configure and run the PID controller simulation.
-9. Run the 3D visualization script.
-10. Save the evaluation metrics and simulation figures.
+5. Run the appropriate feature-extraction script.
+6. Verify the generated feature matrices and labels.
+7. Run the selected DB1 or DB4 classification script.
+8. Inspect the evaluation metrics and confusion matrices.
+9. Configure and run the PID controller simulation.
+10. Run the 3D hand visualization script.
+11. Save the final classification metrics, controller measurements, and figures.
 
-**Note:** Check the actual MATLAB filenames and required inputs before running the scripts; execution commands depend on the implementation in each folder.
+The exact script names and execution commands depend on the files present in each directory. Check each script's input requirements before execution.
 
 ## Limitations
 
-- Classification results depend on the selected classes and evaluation protocol.
-- Subject-independent generalization requires additional testing.
-- Gesture-to-angle mapping uses predefined finger configurations.
+- Classification performance depends on the dataset, movement classes, data split, and evaluation protocol.
+- Subject-independent generalization requires dedicated testing.
+- DB1 and DB4 have different sampling frequencies, so identical window lengths in samples do not represent identical durations.
+- Gesture-to-angle mapping relies on predefined configurations.
 - PID performance is evaluated through software simulation.
-- The 3D hand is a simplified model and does not establish physical or clinical performance.
+- A 3D visualization does not establish physical device performance or clinical effectiveness.
+- Reported benchmark results require reproducible experiment configurations and saved evaluation outputs.
 
 ## Future Work
 
 - Subject-independent gesture recognition
-- Cross-dataset validation
-- Deep learning-based classification
+- Cross-dataset evaluation
+- Deep learning-based sEMG classification
 - Continuous finger-angle estimation
-- Improved controller optimization
-- Real-time latency measurement
+- Improved controller optimization and robustness
+- Real-time latency and computational-cost measurement
 - Physical prosthetic-hand implementation and testing
 
 ## License and Dataset Usage
 
-Refer to the repository's `LICENSE` file for software licensing information. NinaPro dataset access and redistribution are subject to the dataset's own terms.
+Refer to the repository's `LICENSE` file for the software licensing terms.
+
+NinaPro dataset access, use, and redistribution are governed by the dataset's own terms. Do not upload restricted raw dataset files to the repository unless redistribution is explicitly permitted.
 
 ## Disclaimer
 
-This project is intended for academic and educational research. Reported classification and controller results describe the evaluated experiments and do not establish real-time operation, physical prosthetic-hand performance, or clinical effectiveness.
+This project is intended for academic and educational research. Reported classification and controller measurements describe specific experiments and do not establish real-time operation, physical prosthetic-hand performance, or clinical effectiveness.
