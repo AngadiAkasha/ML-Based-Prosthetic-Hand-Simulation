@@ -11,7 +11,7 @@ The workflow processes sEMG signals, extracts RMS features, classifies hand gest
 ## System Workflow
 
 ```text
-NinaPro DB1 / DB4
+NinaPro DB1 
         |
         v
 sEMG Signal Processing
